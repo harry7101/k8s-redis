@@ -257,7 +257,8 @@ StatefulSet创建完毕后，可以看到6个pod已经启动了，但这时候�
 开始初始化集群，首先在k8s上创建一个ubuntu的pod，用来作为管理节点：
 
 kubectl run -i --tty redis-cluster-manager --image=ubuntu --restart=Never /bin/bash
-
+apt-get update
+apt-get install -y vim wget redis-tools dnsutils
 
 在 redis-cluster-manager
 1. wget http://download.redis.io/releases/redis-5.0.3.tar.gz
