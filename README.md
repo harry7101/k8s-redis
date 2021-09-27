@@ -263,7 +263,7 @@ apt-get install -y vim wget redis-tools dnsutils
 在 redis-cluster-manager
 1. wget http://download.redis.io/releases/redis-5.0.3.tar.gz
 2. tar -xvzf redis-5.0.3.tar.gz
-cd redis-5.0.3.tar.gz && make
+cd redis-5.0.3
 
 
 编译完毕后redis-cli会被放置在src目录下，把它放进/usr/local/bin中方便后续操作
