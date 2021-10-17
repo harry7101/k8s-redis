@@ -203,6 +203,13 @@ spec:
           - "/etc/redis/redis.conf"
           - "--protected-mode"
           - "no"
+          - "--cluster-announce-ip"
+          - "$(POD_IP)"
+        env:
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
         resources:
           requests:
             cpu: "100m"
@@ -234,7 +241,7 @@ spec:
       accessModes: [ "ReadWriteMany" ]
       resources:
         requests:
-          storage: 1Gi
+          storage: 10M
 
 
 
@@ -269,15 +276,15 @@ Name:	redis-app-0.redis-service.gold.svc.cluster.local
 Address: 172.17.0.10
 172.17.0.10就是对应的ip。这次部署我们使用0，1，2作为Master节点；3，4，5作为Slave节点，先运行下面的命令来初始化集群的Master节点：
 
-redis-cli --cluster create 10.1.2.199:6379 10.1.2.200:6379 10.1.2.201:6379
+redis-cli --cluster create 10.1.2.244:6379 10.1.2.245:6379 10.1.2.246:6379
 
 然后给他们分别附加对应的Slave节点，这里的cluster-master-id在上一步创建的时候会给出：
 
-redis-cli --cluster add-node 10.1.2.202:6379 10.1.2.199:6379 --cluster-slave --cluster-master-id f053dc9b7599440f8d27ff1891e9cf1e8d6e4ac2
-redis-cli --cluster add-node 10.1.2.203:6379 10.1.2.200:6379 --cluster-slave --cluster-master-id b04ac45e223a1a2538efc71a6c0c67efa123a9be
+redis-cli --cluster add-node 10.1.2.247:6379 10.1.2.244:6379 --cluster-slave --cluster-master-id 603992476513b36cdaac0c09ffb19ff868347985
+redis-cli --cluster add-node 10.1.2.248:6379 10.1.2.245:6379 --cluster-slave --cluster-master-id 6c28daf2d2046b620e78ae0e277b0917e3ca7738
 
  
-redis-cli --cluster add-node 10.1.2.204:6379 10.1.2.201:6379 --cluster-slave --cluster-master-id efa066b331fdb1deaf307a0df517972f8ae36ef8
+redis-cli --cluster add-node 10.1.2.249:6379 10.1.2.246:6379 --cluster-slave --cluster-master-id af6abd0066751add765e7bb6c9a27386ba1f82cf
 
 至此，我们的Redis集群就真正创建完毕了，连到任意一个Redis Pod中检验一下：
 
