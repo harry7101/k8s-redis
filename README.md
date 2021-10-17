@@ -196,7 +196,7 @@ spec:
               topologyKey: kubernetes.io/hostname
       containers:
       - name: redis
-        image: "redis:3.2.8"
+        image: "redis:5.0.14"
         command:
           - "redis-server"
         args:
@@ -254,19 +254,6 @@ StatefulSet创建完毕后，可以看到6个pod已经启动了，但这时候�
  
 在这里需要先介绍一下redis-trib，它是官方提供的redis-cluster管理工具，可以实现redis集群的创建、更新等功能，在早期的redis版本中，它是以源码包里redis-trib.rb这个ruby脚本的方式来运作的（pip上也可以拉到python版本，但我运行失败），现在（我使用的5.0.3）已经被官方集成进redis-cli中。
 
-开始初始化集群，首先在k8s上创建一个ubuntu的pod，用来作为管理节点：
-
-kubectl run -i --tty redis-cluster-manager --image=ubuntu --restart=Never /bin/bash
-apt-get update
-apt-get install -y vim wget redis-tools dnsutils
-
-在 redis-cluster-manager
-1. wget http://download.redis.io/releases/redis-5.0.3.tar.gz
-2. tar -xvzf redis-5.0.3.tar.gz
-cd redis-5.0.3
-
-
-编译完毕后redis-cli会被放置在src目录下，把它放进/usr/local/bin中方便后续操作
 
 
  
@@ -282,15 +269,15 @@ Name:	redis-app-0.redis-service.gold.svc.cluster.local
 Address: 172.17.0.10
 172.17.0.10就是对应的ip。这次部署我们使用0，1，2作为Master节点；3，4，5作为Slave节点，先运行下面的命令来初始化集群的Master节点：
 
-redis-cli --cluster create 172.17.0.10:6379 172.17.0.11:6379 172.17.0.12:6379
+redis-cli --cluster create 10.1.2.199:6379 10.1.2.200:6379 10.1.2.201:6379
 
 然后给他们分别附加对应的Slave节点，这里的cluster-master-id在上一步创建的时候会给出：
 
-redis-cli --cluster add-node 172.17.0.13:6379 172.17.0.10:6379 --cluster-slave --cluster-master-id adf443a4d33c4db2c0d4669d61915ae6faa96b46
-redis-cli --cluster add-node 172.17.0.14:6379 172.17.0.11:6379 --cluster-slave --cluster-master-id 6e5adcb56a871a3d78343a38fcdec67be7ae98f8
+redis-cli --cluster add-node 10.1.2.202:6379 10.1.2.199:6379 --cluster-slave --cluster-master-id f053dc9b7599440f8d27ff1891e9cf1e8d6e4ac2
+redis-cli --cluster add-node 10.1.2.203:6379 10.1.2.200:6379 --cluster-slave --cluster-master-id b04ac45e223a1a2538efc71a6c0c67efa123a9be
 
  
-redis-cli --cluster add-node 172.17.0.16:6379 172.17.0.12:6379 --cluster-slave --cluster-master-id c061e37c5052c22f056fff2a014a9f63c3f47ca0
+redis-cli --cluster add-node 10.1.2.204:6379 10.1.2.201:6379 --cluster-slave --cluster-master-id efa066b331fdb1deaf307a0df517972f8ae36ef8
 
 至此，我们的Redis集群就真正创建完毕了，连到任意一个Redis Pod中检验一下：
 
